@@ -1,10 +1,12 @@
 {
-	"name": "tablepress/tablepress",
+	"name": "diva-dev/tablepress",
 	"description": "TablePress plugin for WordPress",
 	"type": "wordpress-plugin",
 	"keywords": ["wordpress", "plugin", "table"],
 	"homepage": "https://tablepress.org/",
 	"license": "GPL-2.0-only",
+	"minimum-stability": "dev",
+	"prefer-stable": true,
 	"authors": [
 		{
 			"name": "Tobias Bäthge",

@@ -57,13 +57,15 @@
 	$themes_directory_name    = basename( $themes_directory );
 	$theme_candidate_basename = basename( dirname( $fs_root_path ) ) . '/' . basename( $fs_root_path );
 
-	if ( $file_path == fs_normalize_path( realpath( trailingslashit( $themes_directory ) . $theme_candidate_basename . '/' . basename( $file_path ) ) )
-	) {
-		$this_sdk_relative_path = '../' . $themes_directory_name . '/' . $theme_candidate_basename;
-		$is_theme               = true;
-	} else {
-		$this_sdk_relative_path = plugin_basename( $fs_root_path );
-		$is_theme               = false;
+	$this_sdk_relative_path = plugin_basename( $fs_root_path );
+	$is_theme               = false;
+
+	if (realpath( trailingslashit( $themes_directory ) . $theme_candidate_basename . '/' . basename( $file_path ) ) !== false) {
+		if ( $file_path == fs_normalize_path( realpath( trailingslashit( $themes_directory ) . $theme_candidate_basename . '/' . basename( $file_path ) ) )
+		) {
+			$this_sdk_relative_path = '../' . $themes_directory_name . '/' . $theme_candidate_basename;
+			$is_theme               = true;
+		}
 	}
 
 	if ( ! isset( $fs_active_plugins ) ) {
@@ -285,27 +287,29 @@
 		return;
 	}
 
-	if ( version_compare( $this_sdk_version, $fs_active_plugins->newest->version, '<' ) ) {
-		$newest_sdk = $fs_active_plugins->plugins[ $fs_active_plugins->newest->sdk_path ];
-
-		$plugins_or_theme_dir_path = ( ! isset( $newest_sdk->type ) || 'theme' !== $newest_sdk->type ) ?
-			WP_PLUGIN_DIR :
-			$themes_directory;
-
-		$newest_sdk_starter = fs_normalize_path(
-			$plugins_or_theme_dir_path
-			. '/'
-			. str_replace( "../{$themes_directory_name}/", '', $fs_active_plugins->newest->sdk_path )
-			. '/start.php' );
-
-		if ( file_exists( $newest_sdk_starter ) ) {
-			// Reorder plugins to load plugin with newest SDK first.
-			fs_newest_sdk_plugin_first();
-
-			// There's a newer SDK version, load it instead of the current one!
-			require_once $newest_sdk_starter;
-
-			return;
+	if ( isset($fs_active_plugins->newest) ) {
+		if ( version_compare( $this_sdk_version, $fs_active_plugins->newest->version, '<' ) ) {
+			$newest_sdk = $fs_active_plugins->plugins[ $fs_active_plugins->newest->sdk_path ];
+	
+			$plugins_or_theme_dir_path = ( ! isset( $newest_sdk->type ) || 'theme' !== $newest_sdk->type ) ?
+				WP_PLUGIN_DIR :
+				$themes_directory;
+	
+			$newest_sdk_starter = fs_normalize_path(
+				$plugins_or_theme_dir_path
+				. '/'
+				. str_replace( "../{$themes_directory_name}/", '', $fs_active_plugins->newest->sdk_path )
+				. '/start.php' );
+	
+			if ( file_exists( $newest_sdk_starter ) ) {
+				// Reorder plugins to load plugin with newest SDK first.
+				fs_newest_sdk_plugin_first();
+	
+				// There's a newer SDK version, load it instead of the current one!
+				require_once $newest_sdk_starter;
+	
+				return;
+			}
 		}
 	}
 
